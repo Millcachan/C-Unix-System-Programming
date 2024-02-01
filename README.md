@@ -7,4 +7,4 @@ My Ls : 14/21 - 73.7%
 
 My Sokoban : 36/36 - 100%
 
-My Navy : ?
+My Navy : 43/43 - 100%
