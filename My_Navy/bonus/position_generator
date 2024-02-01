@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+##
+## EPITECH PROJECT, 2023
+## B-PSU-100-STG-1-1-navy-titouan.pradoura
+## File description:
+## position_generator.py
+##
+
+from random import randint, shuffle
+import os
+import sys
+
+def is_map_free_horizontal(map, x_start, x_end, y_start, y_end):
+    for y in range(y_start, y_end + 1):
+        for x in range(x_start, x_end):
+            if map[y - 1][x] != '.':
+                return 0
+    return 1
+
+def is_map_free_vertical(map, x_start, x_end, y_start, y_end):
+    for y in range(y_start, y_end):
+        for x in range(x_start, x_end + 1):
+            if map[y - 1][x] != '.':
+                return 0
+    return 1
+
+def put_boat_horizontal(map, x_start, x_end, y_start, y_end):
+    for y in range(y_start, y_end + 1):
+        for x in range(x_start, x_end):
+            map[y - 1][x] = "x"
+
+def put_boat_vertical(map, x_start, x_end, y_start, y_end):
+    for y in range(y_start, y_end):
+        for x in range(x_start, x_end + 1):
+            map[y - 1][x] = "x"
+
+def add_boat(size, map):
+    orientation = randint(0, 1)
+
+    if orientation == 0:
+        x_start = randint(0, 7 - size)
+        y_start = randint(1, 8)
+        y_end = y_start
+        x_end = x_start + size
+        if is_map_free_horizontal(map, x_start, x_end, y_start, y_end):
+            put_boat_horizontal(map, x_start, x_end, y_start, y_end)
+            return (size, x_start, x_end - 1, y_start, y_end)
+        else:
+            return add_boat(size, map)
+    if orientation == 1:
+        x_start = randint(0, 7)
+        y_start = randint(1, 8 - size)
+        y_end = y_start + size
+        x_end = x_start
+        if is_map_free_vertical(map, x_start, x_end, y_start, y_end):
+            put_boat_vertical(map, x_start, x_end, y_start, y_end)
+            return (size, x_start, x_end, y_start, y_end - 1)
+        else:
+            return add_boat(size, map)
+    
+def add_to_file(boat_list):
+    i = 0
+    if not os.path.exists("positions"):
+        os.mkdir("positions")
+    while (os.path.exists(f"positions/pos{i}")):
+        i += 1
+    f = open(f"positions/pos{i}", "w")
+    for boat in boat_list:
+        f.write(f"{boat[0]}:{chr(boat[1] + 65)}{boat[3]}:{chr(boat[2] + 65)}{boat[4]}\n")
+
+
+def generate(create_file):
+    map = []
+    boat_list = []
+    for i in range(8):
+        map.append([])
+        for i in range(8):
+            map[-1].append('.')
+    for size in range(2, 6):
+        boat_list.append(add_boat(size, map))
+    shuffle(boat_list)
+    if create_file:
+        add_to_file(boat_list)
+    return map
+
+def main():
+    if len(sys.argv) == 1:
+        generate(1)
+        sys.exit(0)
+    if len(sys.argv) == 3 and sys.argv[1] == "-t":
+        try:
+            int(sys.argv[2])
+        except:
+            print("The last value need to be an Integer")
+            sys.exit(84)
+        test_generation(int(sys.argv[2]))
+        sys.exit(0)
+    sys.exit(84)
+
+def test_generation(nb_occurence):
+    count_false = 0
+    for i in range(nb_occurence):
+        map = generate(0)
+        count = 0
+        for line in map:
+            for square in line:
+                if square == 'x':
+                    count += 1
+        if count != 14:
+            count_false += 1
+    print(count_false, " Maps are false for ", nb_occurence, "maps generated")
+
+if __name__ == "__main__":
+    main()
